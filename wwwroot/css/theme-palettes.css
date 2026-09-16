@@ -1,0 +1,186 @@
+:root[data-theme-palette="ocean"][data-bs-theme="light"] {
+  --app-accent: #0e7490;
+  --app-accent-rgb: 14, 116, 144;
+  --app-accent-hover: #155e75;
+  --app-accent-active: #164e63;
+  --app-accent-contrast: #ffffff;
+  --app-accent-link: #0e7490;
+  --app-accent-link-rgb: 14, 116, 144;
+  --app-accent-link-hover: #155e75;
+  --app-accent-link-hover-rgb: 21, 94, 117;
+  --app-accent-focus-ring: rgba(14, 116, 144, 0.4);
+  --app-accent-focus-border: #0e7490;
+}
+
+:root[data-theme-palette="fall"][data-bs-theme="light"] {
+  --app-accent: #b45309;
+  --app-accent-rgb: 180, 83, 9;
+  --app-accent-hover: #92400e;
+  --app-accent-active: #78350f;
+  --app-accent-contrast: #ffffff;
+  --app-accent-link: #b45309;
+  --app-accent-link-rgb: 180, 83, 9;
+  --app-accent-link-hover: #92400e;
+  --app-accent-link-hover-rgb: 146, 64, 14;
+  --app-accent-focus-ring: rgba(180, 83, 9, 0.4);
+  --app-accent-focus-border: #b45309;
+}
+
+:root[data-theme-palette="coffee"][data-bs-theme="light"] {
+  --app-accent: #6f4e37;
+  --app-accent-rgb: 111, 78, 55;
+  --app-accent-hover: #523827;
+  --app-accent-active: #3f2b1e;
+  --app-accent-contrast: #ffffff;
+  --app-accent-link: #6f4e37;
+  --app-accent-link-rgb: 111, 78, 55;
+  --app-accent-link-hover: #523827;
+  --app-accent-link-hover-rgb: 82, 56, 39;
+  --app-accent-focus-ring: rgba(111, 78, 55, 0.4);
+  --app-accent-focus-border: #6f4e37;
+}
+
+:root[data-theme-palette="sakura"][data-bs-theme="light"] {
+  --app-accent: #be185d;
+  --app-accent-rgb: 190, 24, 93;
+  --app-accent-hover: #9d174d;
+  --app-accent-active: #831843;
+  --app-accent-contrast: #ffffff;
+  --app-accent-link: #be185d;
+  --app-accent-link-rgb: 190, 24, 93;
+  --app-accent-link-hover: #9d174d;
+  --app-accent-link-hover-rgb: 157, 23, 77;
+  --app-accent-focus-ring: rgba(190, 24, 93, 0.4);
+  --app-accent-focus-border: #be185d;
+}
+
+:root[data-theme-palette="forest"][data-bs-theme="light"] {
+  --app-accent: #3f7d20;
+  --app-accent-rgb: 63, 125, 32;
+  --app-accent-hover: #2f6218;
+  --app-accent-active: #275214;
+  --app-accent-contrast: #ffffff;
+  --app-accent-link: #3f7d20;
+  --app-accent-link-rgb: 63, 125, 32;
+  --app-accent-link-hover: #2f6218;
+  --app-accent-link-hover-rgb: 47, 98, 24;
+  --app-accent-focus-ring: rgba(63, 125, 32, 0.4);
+  --app-accent-focus-border: #3f7d20;
+}
+
+:root[data-theme-palette="ocean"][data-bs-theme="dark"] {
+  --app-accent: #22d3ee;
+  --app-accent-rgb: 34, 211, 238;
+  --app-accent-hover: #67e8f9;
+  --app-accent-active: #a5f3fc;
+  --app-accent-contrast: #082f49;
+  --app-accent-link: #22d3ee;
+  --app-accent-link-rgb: 34, 211, 238;
+  --app-accent-link-hover: #67e8f9;
+  --app-accent-link-hover-rgb: 103, 232, 249;
+  --app-accent-focus-ring: rgba(34, 211, 238, 0.45);
+  --app-accent-focus-border: #22d3ee;
+}
+
+:root[data-theme-palette="fall"][data-bs-theme="dark"] {
+  --app-accent: #f59e0b;
+  --app-accent-rgb: 245, 158, 11;
+  --app-accent-hover: #fbbf24;
+  --app-accent-active: #fcd34d;
+  --app-accent-contrast: #451a03;
+  --app-accent-link: #f59e0b;
+  --app-accent-link-rgb: 245, 158, 11;
+  --app-accent-link-hover: #fbbf24;
+  --app-accent-link-hover-rgb: 251, 191, 36;
+  --app-accent-focus-ring: rgba(245, 158, 11, 0.45);
+  --app-accent-focus-border: #f59e0b;
+}
+
+:root[data-theme-palette="coffee"][data-bs-theme="dark"] {
+  --app-accent: #d6a77a;
+  --app-accent-rgb: 214, 167, 122;
+  --app-accent-hover: #e7c19d;
+  --app-accent-active: #f0d0b1;
+  --app-accent-contrast: #2a160d;
+  --app-accent-link: #d6a77a;
+  --app-accent-link-rgb: 214, 167, 122;
+  --app-accent-link-hover: #e7c19d;
+  --app-accent-link-hover-rgb: 231, 193, 157;
+  --app-accent-focus-ring: rgba(214, 167, 122, 0.45);
+  --app-accent-focus-border: #d6a77a;
+}
+
+:root[data-theme-palette="sakura"][data-bs-theme="dark"] {
+  --app-accent: #f472b6;
+  --app-accent-rgb: 244, 114, 182;
+  --app-accent-hover: #f9a8d4;
+  --app-accent-active: #fbcfe8;
+  --app-accent-contrast: #500724;
+  --app-accent-link: #f472b6;
+  --app-accent-link-rgb: 244, 114, 182;
+  --app-accent-link-hover: #f9a8d4;
+  --app-accent-link-hover-rgb: 249, 168, 212;
+  --app-accent-focus-ring: rgba(244, 114, 182, 0.45);
+  --app-accent-focus-border: #f472b6;
+}
+
+:root[data-theme-palette="forest"][data-bs-theme="dark"] {
+  --app-accent: #4ade80;
+  --app-accent-rgb: 74, 222, 128;
+  --app-accent-hover: #86efac;
+  --app-accent-active: #bbf7d0;
+  --app-accent-contrast: #052e16;
+  --app-accent-link: #4ade80;
+  --app-accent-link-rgb: 74, 222, 128;
+  --app-accent-link-hover: #86efac;
+  --app-accent-link-hover-rgb: 134, 239, 172;
+  --app-accent-focus-ring: rgba(74, 222, 128, 0.45);
+  --app-accent-focus-border: #4ade80;
+}
+
+:root[data-theme-palette][data-bs-theme] {
+  --bs-primary: var(--app-accent);
+  --bs-primary-rgb: var(--app-accent-rgb);
+  --bs-link-color: var(--app-accent-link);
+  --bs-link-color-rgb: var(--app-accent-link-rgb);
+  --bs-link-hover-color: var(--app-accent-link-hover);
+  --bs-link-hover-color-rgb: var(--app-accent-link-hover-rgb);
+  --bs-focus-ring-color: var(--app-accent-focus-ring);
+}
+
+.btn-primary {
+  --bs-btn-color: var(--app-accent-contrast);
+  --bs-btn-bg: var(--app-accent);
+  --bs-btn-border-color: var(--app-accent);
+  --bs-btn-hover-color: var(--app-accent-contrast);
+  --bs-btn-hover-bg: var(--app-accent-hover);
+  --bs-btn-hover-border-color: var(--app-accent-hover);
+  --bs-btn-focus-shadow-rgb: var(--app-accent-rgb);
+  --bs-btn-active-color: var(--app-accent-contrast);
+  --bs-btn-active-bg: var(--app-accent-active);
+  --bs-btn-active-border-color: var(--app-accent-active);
+  --bs-btn-disabled-color: var(--app-accent-contrast);
+  --bs-btn-disabled-bg: var(--app-accent);
+  --bs-btn-disabled-border-color: var(--app-accent);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--app-accent-link);
+  --bs-btn-border-color: var(--app-accent);
+  --bs-btn-hover-color: var(--app-accent-contrast);
+  --bs-btn-hover-bg: var(--app-accent);
+  --bs-btn-hover-border-color: var(--app-accent);
+  --bs-btn-focus-shadow-rgb: var(--app-accent-rgb);
+  --bs-btn-active-color: var(--app-accent-contrast);
+  --bs-btn-active-bg: var(--app-accent-active);
+  --bs-btn-active-border-color: var(--app-accent-active);
+  --bs-btn-disabled-color: var(--app-accent-link);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: var(--app-accent);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--app-accent-focus-border);
+  box-shadow: 0 0 0 0.25rem var(--app-accent-focus-ring);
+}

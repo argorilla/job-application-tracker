@@ -3,15 +3,55 @@
 
   const storageKey = "jobApplicationTracker.theme";
   const validPreferences = new Set(["light", "dark", "system"]);
+  const paletteStorageKey = "jobApplicationTracker.palette";
+  const validPalettes = new Set([
+    "ocean",
+    "fall",
+    "coffee",
+    "sakura",
+    "forest"
+  ]);
   const root = document.documentElement;
   const selectionEnabled =
     root.dataset.themeSelectionEnabled === "true";
+  const paletteSelectionEnabled =
+    root.dataset.paletteSelectionEnabled === "true";
 
   const normalizePreference = value =>
     validPreferences.has(value) ? value : null;
 
   const configuredDefault =
     normalizePreference(root.dataset.themeDefault) ?? "system";
+
+  const normalizePalette = value =>
+    validPalettes.has(value) ? value : null;
+
+  const configuredPalette =
+    normalizePalette(root.dataset.paletteDefault) ?? "ocean";
+
+  let palette = configuredPalette;
+
+  if (paletteSelectionEnabled) {
+    try {
+      const storedPalette = window.localStorage.getItem(
+        paletteStorageKey
+      );
+      const normalizedStoredPalette = normalizePalette(storedPalette);
+
+      if (normalizedStoredPalette !== null) {
+        palette = normalizedStoredPalette;
+      }
+    } catch {
+      // Storage can be unavailable in restricted browser contexts.
+    }
+  }
+
+  const applyPalette = selectedPalette => {
+    palette = selectedPalette;
+    root.setAttribute("data-theme-palette", selectedPalette);
+  };
+
+  applyPalette(palette);
 
   let colorSchemeQuery = null;
 
@@ -80,61 +120,106 @@
     }
   }
 
-  if (!selectionEnabled) {
-    return;
-  }
+  const initializePreferenceControls = () => {
+    if (selectionEnabled) {
+      const selector = document.getElementById("theme-preference");
 
-  const initializePreferenceControl = () => {
-    const selector = document.getElementById("theme-preference");
+      if (selector !== null) {
+        selector.value = preference;
 
-    if (selector === null) {
-      return;
+        selector.addEventListener("change", () => {
+          const selectedPreference = normalizePreference(selector.value);
+
+          if (selectedPreference === null) {
+            selector.value = preference;
+            return;
+          }
+
+          applyPreference(selectedPreference);
+
+          try {
+            window.localStorage.setItem(storageKey, selectedPreference);
+          } catch {
+            // The selected preference still applies to the current page.
+          }
+        });
+
+        window.addEventListener("storage", event => {
+          if (event.key !== storageKey) {
+            return;
+          }
+
+          const synchronizedPreference = event.newValue === null
+            ? configuredDefault
+            : normalizePreference(event.newValue);
+
+          if (synchronizedPreference === null) {
+            return;
+          }
+
+          selector.value = synchronizedPreference;
+          applyPreference(synchronizedPreference);
+        });
+      }
     }
 
-    selector.value = preference;
+    if (paletteSelectionEnabled) {
+      const paletteSelector = document.getElementById(
+        "palette-preference"
+      );
 
-    selector.addEventListener("change", () => {
-      const selectedPreference = normalizePreference(selector.value);
+      if (paletteSelector !== null) {
+        paletteSelector.value = palette;
 
-      if (selectedPreference === null) {
-        selector.value = preference;
-        return;
+        paletteSelector.addEventListener("change", () => {
+          const selectedPalette = normalizePalette(
+            paletteSelector.value
+          );
+
+          if (selectedPalette === null) {
+            paletteSelector.value = palette;
+            return;
+          }
+
+          applyPalette(selectedPalette);
+
+          try {
+            window.localStorage.setItem(
+              paletteStorageKey,
+              selectedPalette
+            );
+          } catch {
+            // The selected palette still applies to the current page.
+          }
+        });
+
+        window.addEventListener("storage", event => {
+          if (event.key !== paletteStorageKey) {
+            return;
+          }
+
+          const synchronizedPalette = event.newValue === null
+            ? configuredPalette
+            : normalizePalette(event.newValue);
+
+          if (synchronizedPalette === null) {
+            return;
+          }
+
+          paletteSelector.value = synchronizedPalette;
+          applyPalette(synchronizedPalette);
+        });
       }
-
-      applyPreference(selectedPreference);
-
-      try {
-        window.localStorage.setItem(storageKey, selectedPreference);
-      } catch {
-        // The selected preference still applies to the current page.
-      }
-    });
-
-    window.addEventListener("storage", event => {
-      if (event.key !== storageKey) {
-        return;
-      }
-
-      const synchronizedPreference = event.newValue === null
-        ? configuredDefault
-        : normalizePreference(event.newValue);
-
-      if (synchronizedPreference === null) {
-        return;
-      }
-
-      selector.value = synchronizedPreference;
-      applyPreference(synchronizedPreference);
-    });
+    }
   };
 
   if (document.readyState === "loading") {
     document.addEventListener(
       "DOMContentLoaded",
-      initializePreferenceControl,
+      initializePreferenceControls,
       { once: true }
     );
   } else {
-    initializePreferenceControl();
+    initializePreferenceControls();
   }
 })();

@@ -19,13 +19,30 @@
     var fallbackBootstrapTheme = Theme.Value.DefaultMode == ThemeMode.Dark
         ? "dark"
         : "light";
+
+    var configuredPalette = Theme.Value.DefaultPalette switch
+    {
+        ThemePalette.Ocean => "ocean",
+        ThemePalette.Fall => "fall",
+        ThemePalette.Coffee => "coffee",
+        ThemePalette.Sakura => "sakura",
+        ThemePalette.Forest => "forest",
+        _ => "ocean"
+    };
+
+    var paletteSelectionEnabled = Theme.Value.AllowPaletteSelection
+        ? "true"
+        : "false";
 }
 
 <!DOCTYPE html>
 <html lang="en"
     data-theme-default="@configuredThemePreference"
     data-theme-selection-enabled="@themeSelectionEnabled"
-    data-bs-theme="@fallbackBootstrapTheme">
+    data-bs-theme="@fallbackBootstrapTheme"
+    data-palette-default="@configuredPalette"
+    data-palette-selection-enabled="@paletteSelectionEnabled"
+    data-theme-palette="@configuredPalette">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,6 +50,7 @@
     <script type="importmap"></script>
     <script src="~/js/theme-initializer.js" asp-append-version="true"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/theme-palettes.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/JobApplicationTracker.styles.css" asp-append-version="true" />
 </head>
@@ -66,29 +84,74 @@
                     }
 
                     <ul class="navbar-nav ms-auto">
-                        @if (Theme.Value.AllowUserSelection)
+                        @if (Theme.Value.AllowUserSelection ||
+                            Theme.Value.AllowPaletteSelection)
                         {
-                            <li class="nav-item d-flex align-items-center
-                                       me-sm-3 my-2 my-sm-0">
-                                <label for="theme-preference"
-                                    class="visually-hidden">
-                                    Theme preference
-                                </label>
-                                <select id="theme-preference"
-                                    class="form-select form-select-sm w-auto">
-                                    <option value="system"
-                                        selected="@(configuredThemePreference == "system")">
-                                        System
-                                    </option>
-                                    <option value="light"
-                                        selected="@(configuredThemePreference == "light")">
-                                        Light
-                                    </option>
-                                    <option value="dark"
-                                        selected="@(configuredThemePreference == "dark")">
-                                        Dark
-                                    </option>
-                                </select>
+                            <li class="nav-item me-sm-3 my-2 my-sm-0">
+                                <fieldset class="border-0 p-0 m-0 d-flex
+                                    flex-column flex-sm-row gap-2">
+                                    <legend class="visually-hidden">
+                                        Appearance
+                                    </legend>
+
+                                    @if (Theme.Value.AllowUserSelection)
+                                    {
+                                        <div class="d-flex align-items-center gap-2">
+                                            <label for="theme-preference"
+                                                class="form-label small mb-0">
+                                                Mode
+                                            </label>
+                                            <select id="theme-preference"
+                                                class="form-select form-select-sm w-auto">
+                                                <option value="system"
+                                                    selected="@(configuredThemePreference == "system")">
+                                                    System
+                                                </option>
+                                                <option value="light"
+                                                    selected="@(configuredThemePreference == "light")">
+                                                    Light
+                                                </option>
+                                                <option value="dark"
+                                                    selected="@(configuredThemePreference == "dark")">
+                                                    Dark
+                                                </option>
+                                            </select>
+                                        </div>
+                                    }
+
+                                    @if (Theme.Value.AllowPaletteSelection)
+                                    {
+                                        <div class="d-flex align-items-center gap-2">
+                                            <label for="palette-preference"
+                                                class="form-label small mb-0">
+                                                Theme
+                                            </label>
+                                            <select id="palette-preference"
+                                                class="form-select form-select-sm w-auto">
+                                                <option value="ocean"
+                                                    selected="@(configuredPalette == "ocean")">
+                                                    Ocean
+                                                </option>
+                                                <option value="fall"
+                                                    selected="@(configuredPalette == "fall")">
+                                                    Fall
+                                                </option>
+                                                <option value="coffee"
+                                                    selected="@(configuredPalette == "coffee")">
+                                                    Coffee
+                                                </option>
+                                                <option value="sakura"
+                                                    selected="@(configuredPalette == "sakura")">
+                                                    Sakura
+                                                </option>
+                                                <option value="forest"
+                                                    selected="@(configuredPalette == "forest")">
+                                                    Forest
+                                                </option>
+                                            </select>
+                                        </div>
+                                    }
+                                </fieldset>
                             </li>
                         }
 

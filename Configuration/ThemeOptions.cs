@@ -10,4 +10,9 @@ public sealed class ThemeOptions
     public ThemeMode DefaultMode { get; set; } = ThemeMode.System;
 
     public bool AllowUserSelection { get; set; } = true;
+
+    [EnumDataType(typeof(ThemePalette))]
+    public ThemePalette DefaultPalette { get; set; } = ThemePalette.Ocean;
+
+    public bool AllowPaletteSelection { get; set; } = true;
 }
