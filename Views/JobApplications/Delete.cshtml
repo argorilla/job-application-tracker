@@ -1,0 +1,70 @@
+@model JobApplicationTracker.Models.JobApplication
+
+@{
+    ViewData["Title"] = "Delete Job Application";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="mb-4">
+            <h1 class="h2 mb-1">Delete Job Application</h1>
+            <p class="text-muted mb-0">
+                Review the application before permanently deleting it.
+            </p>
+        </div>
+
+        <div class="alert alert-danger" role="alert">
+            <strong>Are you sure?</strong>
+            This action cannot be undone.
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Company</dt>
+                    <dd class="col-sm-8">@Model.CompanyName</dd>
+
+                    <dt class="col-sm-4">Position</dt>
+                    <dd class="col-sm-8">@Model.PositionTitle</dd>
+
+                    <dt class="col-sm-4">Source</dt>
+                    <dd class="col-sm-8">@Model.Source</dd>
+
+                    <dt class="col-sm-4">Applied Date</dt>
+                    <dd class="col-sm-8">
+                        @Model.AppliedDate.ToString("dd MMM yyyy")
+                    </dd>
+
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">@Model.Status</dd>
+
+                    <dt class="col-sm-4">Location</dt>
+                    <dd class="col-sm-8">
+                        @(string.IsNullOrWhiteSpace(Model.Location)
+                            ? "—"
+                            : Model.Location)
+                    </dd>
+                </dl>
+            </div>
+
+            <div class="card-footer bg-white p-3">
+                <form asp-action="Delete"
+                    asp-route-id="@Model.Id"
+                    method="post"
+                    class="d-flex justify-content-end gap-2">
+
+                    <input asp-for="Id" type="hidden" />
+
+                    <a asp-action="Index"
+                        class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+
+                    <button type="submit" class="btn btn-danger">
+                        Delete Application
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

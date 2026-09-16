@@ -1,0 +1,227 @@
+@model JobApplicationTracker.ViewModels.JobApplicationIndexViewModel
+@using JobApplicationTracker.Models
+
+@{
+    ViewData["Title"] = "Job Applications";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 mb-1">Job Applications</h1>
+        <p class="text-muted mb-0">
+            Track the progress of submitted applications.
+        </p>
+    </div>
+
+    <a asp-action="Create" class="btn btn-primary">
+        Add Application
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show"
+        role="alert">
+        @successMessage
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close">
+        </button>
+    </div>
+}
+
+@if (Model.Applications.Count == 0)
+{
+    @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) ||
+        Model.Status.HasValue)
+    {
+        <div class="alert alert-info">
+            <p class="mb-2">
+                No applications match your search and filters.
+            </p>
+
+            <a asp-action="Index"
+                class="alert-link">
+                Clear search and filters
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            No job applications have been added.
+        </div>
+    }
+}
+else
+{
+    <div class="table-responsive">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="d-flex align-items-center gap-2 w-100">
+                <form asp-action="Index"
+                    method="get"
+                    class="w-100 row g-3 align-items-end mb-4">
+
+                    <div class="col-md-5">
+                        <label for="q" class="form-label">
+                            Search
+                        </label>
+
+                        <input id="q"
+                            name="q"
+                            type="search"
+                            value="@Model.SearchTerm"
+                            class="form-control"
+                            maxlength="100"
+                            placeholder="Search company or position..." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="Status" class="form-label">
+                            Status
+                        </label>
+
+                        <select asp-for="Status"
+                                asp-items="Html.GetEnumSelectList<ApplicationStatus>()"
+                                class="form-select">
+                            <option value="">All statuses</option>
+                        </select>
+                    </div>
+
+                    <div class="col-auto">
+                        <button type="submit"
+                                class="btn btn-primary">
+                            Search
+                        </button>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) ||
+                        Model.Status.HasValue)
+                    {
+                        <div class="col-auto">
+                            <a asp-action="Index"
+                            class="btn btn-outline-secondary">
+                                Clear
+                            </a>
+                        </div>
+                    }
+                </form>
+            </div>
+        </div>
+
+        <table class="table table-striped table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Position</th>
+                    <th>Source</th>
+                    <th>Applied Date</th>
+                    <th>Status</th>
+                    <th>Job Link</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var application in Model.Applications)
+                {
+                    <tr>
+                        <td>@application.CompanyName</td>
+                        <td>@application.PositionTitle</td>
+                        <td>@application.Source</td>
+                        <td>@application.AppliedDate.ToString("dd MMM yyyy")</td>
+                        <td>@application.Status</td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(application.JobUrl))
+                            {
+                                <a href="@application.JobUrl"
+                                    target="_blank"
+                                    rel="noopener noreferrer">
+                                    View
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group" role="group">
+                                <a asp-action="Details"
+                                asp-route-id="@application.Id"
+                                class="btn btn-sm btn-outline-secondary">
+                                    Details
+                                </a>
+
+                                <a asp-action="Edit"
+                                asp-route-id="@application.Id"
+                                class="btn btn-sm btn-outline-primary">
+                                    Edit
+                                </a>
+
+                                <a asp-action="Delete"
+                                asp-route-id="@application.Id"
+                                class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (Model.Applications.Count > 0 &&
+            (Model.HasPreviousPage || Model.HasNextPage))
+        {
+            <nav class="mt-4"
+                aria-label="Job application pagination">
+
+                <div class="d-flex justify-content-between
+                            align-items-center gap-3">
+
+                    @if (Model.HasPreviousPage)
+                    {
+                        <a asp-action="Index"
+                        asp-route-q="@Model.SearchTerm"
+                        asp-route-status="@Model.Status"
+                        asp-route-before="@Model.PreviousCursor"
+                        class="btn btn-outline-primary">
+                            Previous
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="btn btn-outline-secondary disabled"
+                            aria-disabled="true">
+                            Previous
+                        </span>
+                    }
+
+                    <span class="text-muted small text-center">
+                        Showing @Model.Applications.Count
+                        of @Model.TotalCount
+                    </span>
+
+                    @if (Model.HasNextPage)
+                    {
+                        <a asp-action="Index"
+                        asp-route-q="@Model.SearchTerm"
+                        asp-route-status="@Model.Status"
+                        asp-route-after="@Model.NextCursor"
+                        class="btn btn-outline-primary">
+                            Next
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="btn btn-outline-secondary disabled"
+                            aria-disabled="true">
+                            Next
+                        </span>
+                    }
+                </div>
+            </nav>
+        }
+    </div>
+}

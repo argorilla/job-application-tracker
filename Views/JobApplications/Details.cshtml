@@ -1,0 +1,98 @@
+@model JobApplicationTracker.Models.JobApplication
+
+@{
+    ViewData["Title"] = "Job Application Details";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="mb-4">
+            <h1 class="h2 mb-1">Job Application Details</h1>
+            <p class="text-muted mb-0">
+                Review the complete application information.
+            </p>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <h2 class="h4 mb-1">@Model.PositionTitle</h2>
+                    <p class="text-muted mb-0">
+                        @Model.CompanyName
+                    </p>
+                </div>
+
+                <dl class="row mb-0">
+                    <dt classdt class="col-sm-4">Source</dt>
+                    <dd class="col-sm-8">@Model.Source</dd>
+
+                    <dt class="col-sm-4">Location</dt>
+                    <dd class="col-sm-8">
+                        @(string.IsNullOrWhiteSpace(Model.Location)
+                            ? "—"
+                            : Model.Location)
+                    </dd>
+
+                    <dt class="col-sm-4">Applied Date</dt>
+                    <dd class="col-sm-8">
+                        @Model.AppliedDate.ToString("dd MMM yyyy")
+                    </dd>
+
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">@Model.Status</dd>
+
+                    <dt class="col-sm-4">Job URL</dt>
+                    <dd class="col-sm-8">
+                        @if (!string.IsNullOrWhiteSpace(Model.JobUrl))
+                        {
+                            <a href="@Model.JobUrl"
+                                target="_blank"
+                                rel="noopener noreferrer">
+                                Open job listing
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4">Notes</dt>
+                    <dd class="col-sm-8">
+                        @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                        {
+                            <div style="white-space: pre-wrap;">@Model.Notes</div>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+
+            <div class="card-footer bg-white p-3">
+                <div class="d-flex justify-content-between gap-2">
+                    <a asp-action="Index"
+                        class="btn btn-outline-secondary">
+                        Back to List
+                    </a>
+
+                    <div class="d-flex gap-2">
+                        <a asp-action="Edit"
+                            asp-route-id="@Model.Id"
+                            class="btn btn-primary">
+                            Edit
+                        </a>
+
+                        <a asp-action="Delete"
+                            asp-route-id="@Model.Id"
+                            class="btn btn-outline-danger">
+                            Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

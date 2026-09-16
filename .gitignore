@@ -1,0 +1,35 @@
+# SQLite local database
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# .NET build output
+bin/
+obj/
+
+# IDE and OS
+.vscode/
+.idea/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.DS_Store
+
+# Local configuration
+.env
+.env.*
+appsettings.Local.json
+appsettings.*.Local.json
+
+# Local secrets and certificates
+secrets.json
+*.pfx
+*.p12
+*.pem
+*.key
+*.snk

@@ -1,0 +1,192 @@
+﻿@model JobApplicationTracker.ViewModels.HomeDashboardViewModel
+@using JobApplicationTracker.Models
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex flex-column flex-md-row
+            justify-content-between align-items-md-center
+            gap-3 mb-4">
+    <div>
+        <h1 class="h2 mb-1">Job Application Dashboard</h1>
+        <p class="text-muted mb-0">
+            Executive summary of your current application pipeline.
+        </p>
+    </div>
+
+    <a asp-controller="JobApplications"
+        asp-action="Create"
+        class="btn btn-primary">
+        Add Application
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <p class="text-muted mb-2">Total Applications</p>
+                <p class="display-6 fw-semibold mb-0">
+                    @Model.TotalApplications
+                </p>
+            </div>
+
+            <div class="card-footer bg-white border-0">
+                    <a asp-controller="JobApplications"
+                    asp-action="Index"
+                    class="text-decoration-none">
+                    View all
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <p class="text-muted mb-2">Active Pipeline</p>
+                <p class="display-6 fw-semibold text-primary mb-0">
+                    @Model.ActiveApplications
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <p class="text-muted mb-2">Interviews</p>
+                <p class="display-6 fw-semibold text-warning mb-0">
+                    @Model.GetStatusCount(ApplicationStatus.Interview)
+                </p>
+            </div>
+
+            <div class="card-footer bg-white border-0">
+                    <a asp-controller="JobApplications"
+                    asp-action="Index"
+                    asp-route-status="@ApplicationStatus.Interview"
+                    class="text-decoration-none">
+                    View interviews
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <p class="text-muted mb-2">Offers</p>
+                <p class="display-6 fw-semibold text-success mb-0">
+                    @Model.GetStatusCount(ApplicationStatus.Offer)
+                </p>
+            </div>
+
+            <div class="card-footer bg-white border-0">
+                <a asp-controller="JobApplications"
+                    asp-action="Index"
+                    asp-route-status="@ApplicationStatus.Offer"
+                    class="text-decoration-none">
+                    View offers
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Status Breakdown</h2>
+            </div>
+
+            <div class="list-group list-group-flush">
+                @foreach (var status in Enum.GetValues<ApplicationStatus>())
+                {
+                    <a asp-controller="JobApplications"
+                        asp-action="Index"
+                        asp-route-status="@status"
+                        class="list-group-item list-group-item-action
+                                d-flex justify-content-between
+                                align-items-center">
+
+                        <span>
+                            @(status == ApplicationStatus.TechnicalTest
+                                ? "Technical Test"
+                                : status.ToString())
+                        </span>
+
+                        <span class="badge text-bg-secondary rounded-pill">
+                            @Model.GetStatusCount(status)
+                        </span>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-white
+                        d-flex justify-content-between
+                        align-items-center">
+                <h2 class="h5 mb-0">Recent Applications</h2>
+
+                <a asp-controller="JobApplications"
+                    asp-action="Index"
+                    class="small text-decoration-none">
+                    View all
+                </a>
+            </div>
+
+            @if (Model.RecentApplications.Count == 0)
+            {
+                <div class="card-body">
+                    <div class="alert alert-info mb-0">
+                        No applications have been added.
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var application in Model.RecentApplications)
+                    {
+                        <a asp-controller="JobApplications"
+                            asp-action="Details"
+                            asp-route-id="@application.Id"
+                            class="list-group-item list-group-item-action">
+
+                            <div class="d-flex justify-content-between
+                                        align-items-start gap-3">
+                                <div>
+                                    <h3 class="h6 mb-1">
+                                        @application.PositionTitle
+                                    </h3>
+
+                                    <p class="text-muted mb-0">
+                                        @application.CompanyName
+                                    </p>
+                                </div>
+
+                                <div class="text-end flex-shrink-0">
+                                    <span class="badge text-bg-light">
+                                        @(application.Status ==
+                                            ApplicationStatus.TechnicalTest
+                                            ? "Technical Test"
+                                            : application.Status.ToString())
+                                    </span>
+
+                                    <div class="small text-muted mt-1">
+                                        @application.AppliedDate.ToString("dd MMM yyyy")
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

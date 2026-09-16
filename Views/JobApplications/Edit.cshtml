@@ -1,0 +1,124 @@
+@model JobApplicationTracker.Models.JobApplication
+
+@{
+    ViewData["Title"] = "Edit Job Application";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="mb-4">
+            <h1>Edit Job Application</h1>
+            <p class="text-muted mb-0">
+                Update the details of your job application.
+            </p>
+        </div>
+
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="CompanyName"
+                                class="form-label"></label>
+                            <input asp-for="CompanyName"
+                                class="form-control" />
+                            <span asp-validation-for="CompanyName"
+                                class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="PositionTitle"
+                                class="form-label"></label>
+                            <input asp-for="PositionTitle"
+                                class="form-control" />
+                            <span asp-validation-for="PositionTitle"
+                                class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Source"
+                                class="form-label"></label>
+                            <input asp-for="Source"
+                                class="form-control"
+                                placeholder="JobStreet, LinkedIn, Company Website" />
+                            <span asp-validation-for="Source"
+                                class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Location"
+                                class="form-label"></label>
+                            <input asp-for="Location"
+                                class="form-control"
+                                placeholder="Remote or city name" />
+                            <span asp-validation-for="Location"
+                                class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="AppliedDate"
+                                class="form-label"></label>
+                            <input asp-for="AppliedDate"
+                                class="form-control"
+                                max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="AppliedDate"
+                                class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Status"
+                                class="form-label"></label>
+                            <select asp-for="Status"
+                                    asp-items="Html.GetEnumSelectList<ApplicationStatus>()"
+                                    class="form-select">
+                            </select>
+                            <span asp-validation-for="Status"
+                                class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="JobUrl"
+                                class="form-label"></label>
+                            <input asp-for="JobUrl"
+                                class="form-control"
+                                placeholder="https://..." />
+                            <span asp-validation-for="JobUrl"
+                                class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Notes"
+                                class="form-label"></label>
+                            <textarea asp-for="Notes"
+                                    class="form-control"
+                                    rows="4"></textarea>
+                            <span asp-validation-for="Notes"
+                                class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white p-3 d-flex gap-2 justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                        Save Changes
+                    </button>
+
+                    <a asp-action="Index" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <partial name="_ValidationScriptsPartial" />
+}
