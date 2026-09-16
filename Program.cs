@@ -105,6 +105,13 @@ builder.Services.Configure<ApplicationInfoOptions>(
     builder.Configuration.GetSection(
         ApplicationInfoOptions.SectionName));
 
+builder.Services
+    .AddOptions<ThemeOptions>()
+    .Bind(builder.Configuration.GetRequiredSection(
+        ThemeOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

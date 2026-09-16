@@ -7,31 +7,8 @@ a.navbar-brand {
   word-break: break-all;
 }
 
-a {
-  color: #3f8efc !important;
-}
-
-.btn-primary {
-  color: #fff;
-  background-color: #2667ff !important;
-  border-color: #87bfff !important;
-}
-
-.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #2667ff !important;
-  border-color: #87bfff !important;
-}
-
-.border-top {
-  border-top: 1px solid #e5e5e5;
-}
-.border-bottom {
-  border-bottom: 1px solid #e5e5e5;
-}
-
 .box-shadow {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+  box-shadow: var(--bs-box-shadow-sm);
 }
 
 button.accept-policy {

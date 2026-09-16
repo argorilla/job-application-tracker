@@ -1,21 +1,44 @@
 ﻿@using JobApplicationTracker.Configuration
 @using Microsoft.Extensions.Options
 @inject IOptionsSnapshot<ApplicationInfoOptions> ApplicationInfo
+@inject IOptionsSnapshot<ThemeOptions> Theme
+
+@{
+    var configuredThemePreference = Theme.Value.DefaultMode switch
+    {
+        ThemeMode.Light => "light",
+        ThemeMode.Dark => "dark",
+        ThemeMode.System => "system",
+        _ => "system"
+    };
+
+    var themeSelectionEnabled = Theme.Value.AllowUserSelection
+        ? "true"
+        : "false";
+
+    var fallbackBootstrapTheme = Theme.Value.DefaultMode == ThemeMode.Dark
+        ? "dark"
+        : "light";
+}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"
+    data-theme-default="@configuredThemePreference"
+    data-theme-selection-enabled="@themeSelectionEnabled"
+    data-bs-theme="@fallbackBootstrapTheme">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - JobApplicationTracker</title>
     <script type="importmap"></script>
+    <script src="~/js/theme-initializer.js" asp-append-version="true"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/JobApplicationTracker.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm bg-body-tertiary border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">JobApplicationTracker</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -27,22 +50,48 @@
                     {
                         <ul class="navbar-nav flex-grow-1">
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark"
+                                <a class="nav-link"
                                 asp-controller="JobApplications"
                                 asp-action="Index">
                                     Applications
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                             </li>
                         </ul>
                     }
 
                     <ul class="navbar-nav ms-auto">
+                        @if (Theme.Value.AllowUserSelection)
+                        {
+                            <li class="nav-item d-flex align-items-center
+                                       me-sm-3 my-2 my-sm-0">
+                                <label for="theme-preference"
+                                    class="visually-hidden">
+                                    Theme preference
+                                </label>
+                                <select id="theme-preference"
+                                    class="form-select form-select-sm w-auto">
+                                    <option value="system"
+                                        selected="@(configuredThemePreference == "system")">
+                                        System
+                                    </option>
+                                    <option value="light"
+                                        selected="@(configuredThemePreference == "light")">
+                                        Light
+                                    </option>
+                                    <option value="dark"
+                                        selected="@(configuredThemePreference == "dark")">
+                                        Dark
+                                    </option>
+                                </select>
+                            </li>
+                        }
+
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item d-flex align-items-center me-3">
