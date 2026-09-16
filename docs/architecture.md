@@ -23,6 +23,7 @@ flowchart TB
     Middleware[ASP.NET Core middleware]
     Controllers[MVC controllers]
     Views[Razor Views and ViewModels]
+    Appearance[Appearance initializer and CSS tokens]
     Services[JWT service and cursor codec]
     Context[ApplicationDbContext]
     Database[(SQLite)]
@@ -30,6 +31,7 @@ flowchart TB
     Browser --> Middleware
     Middleware --> Controllers
     Controllers --> Views
+    Views --> Appearance
     Controllers --> Services
     Controllers --> Context
     Context --> Database
@@ -43,6 +45,7 @@ The layers are intentionally lightweight:
 - **Services:** `JwtTokenService` creates access tokens. `JobApplicationCursorCodec` is a stateless pagination helper registered as a singleton.
 - **Persistence:** `ApplicationDbContext` maps entities to SQLite with EF Core. Migrations define schema history; startup seeders insert initial rows.
 - **Views:** Razor Views generate HTML and use tag helpers for routes, forms, validation messages, and anti-forgery fields.
+- **Appearance:** `ThemeOptions`, the shared layout, a synchronous initializer, Bootstrap 5.3 color modes, and a token-based stylesheet coordinate browser-local mode and palette choices.
 
 There is no separate repository or domain-service layer. Controllers query EF Core directly, which keeps this small application easy to follow at the cost of tighter presentation/persistence coupling.
 
@@ -66,6 +69,70 @@ sequenceDiagram
 ```
 
 `Program.cs` registers MVC, EF Core, authentication, authorization, application services, cursor encoding, and options. The runtime pipeline uses HTTPS redirection, routing, authentication, authorization, static assets, and the conventional `{controller=Home}/{action=Index}/{id?}` route. Outside Development, exceptions are routed to `/Home/Error` and HSTS is enabled.
+
+## Appearance resolution and styling
+
+Appearance has two independent preference dimensions:
+
+- **Mode preference:** Light, Dark, or System.
+- **Resolved Bootstrap mode:** only `light` or `dark`, written to `data-bs-theme`. System is resolved with `prefers-color-scheme`.
+- **Palette preference:** Ocean, Fall, Coffee, Sakura, or Forest, written to `data-theme-palette`.
+- **Semantic status colors:** Bootstrap success, danger, warning, info, and neutral colors remain outside palette control.
+
+`ThemeOptions` contains `DefaultMode`, `AllowUserSelection`, `DefaultPalette`, and `AllowPaletteSelection`. `ThemeMode` and `ThemePalette` are closed enums, both default selectors are validated with data annotations, and `ValidateOnStart()` activates startup validation. The shared layout converts enum values through explicit switches before rendering normalized values into these root attributes:
+
+- `data-theme-default`
+- `data-theme-selection-enabled`
+- `data-bs-theme`
+- `data-palette-default`
+- `data-palette-selection-enabled`
+- `data-theme-palette`
+
+```mermaid
+flowchart TD
+    Config[Theme server configuration] --> Layout[Shared layout root attributes]
+    Storage[Valid localStorage preferences] --> Init[Synchronous initializer]
+    Layout --> Init
+    Init --> Mode{Mode preference}
+    Mode -->|Light or Dark| Resolved[Resolved light or dark]
+    Mode -->|System| OS[prefers-color-scheme]
+    OS --> Resolved
+    Init --> Palette[Resolved palette preference]
+    Resolved --> Root[data-bs-theme]
+    Palette --> PaletteRoot[data-theme-palette]
+    Root --> Bootstrap[Bootstrap color mode]
+    PaletteRoot --> Tokens[Palette CSS tokens]
+    Bootstrap --> UI[Rendered UI]
+    Tokens --> UI
+```
+
+### First-paint and JavaScript lifecycle
+
+The shared layout loads appearance resources in this order:
+
+1. Synchronous `theme-initializer.js`.
+2. Bootstrap CSS.
+3. `theme-palettes.css`.
+4. `site.css`.
+5. Generated scoped CSS.
+
+The external initializer runs in the document head without `async` or `defer`. It normalizes server-rendered defaults, safely reads `jobApplicationTracker.theme` and `jobApplicationTracker.palette` when their respective selection policies are enabled, and writes the resolved root attributes before stylesheets are applied. This reduces flashes of the server fallback mode or default accent, although it does not make a flash mathematically impossible in every browser or loading condition.
+
+Mode and palette state remain separate inside the initializer. Storage failures are caught without logging values or interrupting navigation. After DOM readiness, native selectors are initialized from the resolved preferences. Valid changes apply immediately and are written to local storage; failed writes still leave the current page updated. Storage events synchronize valid cross-tab changes and restore configured defaults when a key is removed, without writing back. Invalid event values are ignored.
+
+For System mode, a `prefers-color-scheme: dark` media query resolves the effective Bootstrap mode and listens for live operating-system changes. Explicit Light or Dark preferences are unaffected by those changes. Mode and palette interaction and storage listeners are independently enabled: disabling one ignores its stored value without deleting it or disabling the other.
+
+### CSS token architecture
+
+`theme-palettes.css` contains one Light and one Dark block for each palette. Each block defines only this application token contract:
+
+- `--app-accent`, `--app-accent-rgb`, `--app-accent-hover`, `--app-accent-active`, `--app-accent-contrast`
+- `--app-accent-link`, `--app-accent-link-rgb`, `--app-accent-link-hover`, `--app-accent-link-hover-rgb`
+- `--app-accent-focus-ring`, `--app-accent-focus-border`
+
+A shared mapping layer applies the active tokens to Bootstrap's root primary, link, and focus variables. Separate shared mappings override the component-local variables used by `.btn-primary` and `.btn-outline-primary` for default, hover, active, focus, and disabled states. Narrow `.form-control:focus` and `.form-select:focus` rules replace Bootstrap's compiled blue border and ring. Changing only `--bs-primary` would not cover those component-local button variables or compiled focus declarations.
+
+Success, danger, warning, info, and neutral variables are deliberately untouched so application statuses and validation retain their semantic meaning. The five palettes combined with the two effective modes produce ten visual states; the project owner has manually verified all ten and has also verified Light, Dark, and System behavior across multiple browsers. There are no automated browser or accessibility tests.
 
 ## CRUD data flow
 
@@ -156,11 +223,13 @@ flowchart LR
     Settings[appsettings.json] --> Config[ASP.NET Core configuration]
     Dev[appsettings.Development.json] --> Config
     Secrets[.NET User Secrets] --> Config
-    Config --> Options[ApplicationInfoOptions]
+    Config --> Options[ApplicationInfoOptions and ThemeOptions]
     Config --> Runtime[DbContext, JWT service, seeders]
 ```
 
-Safe shared settings include the SQLite connection string, application display metadata, JWT issuer/audience/expiration, logging, and allowed hosts. `ApplicationInfo` is bound to `ApplicationInfoOptions`; the connection string, JWT settings, and seed-user settings are read directly from `IConfiguration`.
+Safe shared settings include the SQLite connection string, application display metadata, appearance defaults and selection policies, JWT issuer/audience/expiration, logging, and allowed hosts. `ApplicationInfo` is bound to `ApplicationInfoOptions`. The required `Theme` section is bound to `ThemeOptions`, validated with data annotations, and validated at startup. The connection string, JWT settings, and seed-user settings are read directly from `IConfiguration`.
+
+Appearance configuration is safe to commit and contains no credentials. Browser mode and palette preferences are local presentation state, not authentication data or secrets. They remain in `localStorage` and are not persisted to SQLite or `AppUser`; the feature therefore requires no controller, entity, migration, or database changes.
 
 The JWT signing key and seed-user credentials are intentionally absent from committed configuration and must be supplied through .NET User Secrets for local development. The generated SQLite database is also local state: it may contain password hashes, notes, URLs, and other private job-search data. User Secrets, database files, SQLite WAL/SHM sidecars, and local override configuration belong outside Git.
 
@@ -203,6 +272,7 @@ Two migrations are present: the initial `JobApplications` table and a later `Use
 | `JwtTokenService` | Scoped | `AccountController` token creation |
 | `JobApplicationCursorCodec` | Singleton | Application-list cursor encoding/decoding |
 | `ApplicationInfoOptions` | Options pipeline | Shared Razor layout metadata |
+| `ThemeOptions` | Options pipeline with startup validation | Appearance defaults and selector policies |
 | JWT Bearer authentication | Framework-managed | Cookie token validation and challenges |
 | Authorization | Framework-managed | `[Authorize]` enforcement |
 
@@ -239,3 +309,8 @@ At startup, a manually created scope resolves the DbContext and password hasher,
 - **Startup seeding:** offers an immediately populated local experience, but couples startup to required secret configuration and embeds sample records in production code.
 - **Entity validation attributes:** keep constraints close to the data model and power both MVC and migration metadata, but mix persistence/domain concerns with presentation error text.
 - **Explicit migrations:** make schema evolution reviewable and reproducible, but require an operator or setup step because migrations are not applied at runtime.
+- **Browser-local appearance:** avoids database and account coupling, but preferences do not follow a user to another browser or device.
+- **Synchronous external initializer:** improves first-paint consistency while remaining compatible with a future restrictive script policy more easily than inline code, but adds a render-blocking request.
+- **Single token stylesheet:** centralizes all palette/mode combinations and shared Bootstrap mappings with less duplication than one stylesheet per palette, at the cost of loading definitions for inactive palettes.
+- **Closed palette enum:** makes server validation and browser normalization predictable, but does not support arbitrary user-defined colors.
+- **Two native selectors:** preserve keyboard behavior and keep dependencies small, but offer less visual customization than a bespoke appearance component.

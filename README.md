@@ -4,7 +4,7 @@ Job Application Tracker is a server-rendered web application for keeping a perso
 
 ## Overview
 
-The project is an ASP.NET Core MVC application backed by SQLite and Entity Framework Core. Razor Views provide the UI, Bootstrap supplies the layout and components, and data annotations enforce validation on both the server and, where supported, in the browser.
+The project is an ASP.NET Core MVC application backed by SQLite and Entity Framework Core. Razor Views provide the UI, Bootstrap supplies the layout and components, and data annotations enforce validation on both the server and, where supported, in the browser. Its configurable appearance combines Light, Dark, or System mode with one of five independent accent palettes.
 
 The repository also explores a local authentication design: the application seeds one configured user, verifies an ASP.NET Core Identity password hash, issues a JWT, and stores that token in an HttpOnly cookie. This is an educational implementation for local use, not a production-ready identity system.
 
@@ -21,6 +21,10 @@ For a more detailed explanation of boundaries and request flows, see [docs/archi
 - Protect the dashboard and application-management routes with authorization.
 - Seed starter application records and one locally configured user.
 - Manage the schema through committed Entity Framework Core migrations.
+- Choose Light, Dark, or System mode independently from the Ocean, Fall, Coffee, Sakura, or Forest accent palette.
+- Preserve browser-local appearance choices across navigation and synchronize changes across tabs; System mode follows live operating-system color-scheme changes.
+
+The five palettes support both effective Bootstrap modes, producing ten palette/mode visual combinations. These combinations, along with Light, Dark, and System behavior, have been manually verified in multiple browsers.
 
 ## Screenshots
 
@@ -30,6 +34,7 @@ Screenshots are not currently included in the repository. Useful portfolio addit
 2. The application list with a search term, status filter, and pagination controls.
 3. The create or edit form showing validation feedback.
 4. The login screen.
+5. A small representative appearance set: Ocean Light, Ocean Dark, Sakura Light, and Forest Dark.
 
 Store future images in a repository folder such as `docs/images/` and replace this section with relative Markdown links. Use demonstration data rather than real application details.
 
@@ -42,7 +47,8 @@ Store future images in a repository folder such as `docs/images/` and replace th
 | ORM | Entity Framework Core SQLite and Design packages | 9.0.9 |
 | Authentication handler | ASP.NET Core JWT Bearer | 9.0.9 |
 | EF CLI tool | `dotnet-ef` local tool | 9.0.9 |
-| UI | Bootstrap | 5.3.3 |
+| UI and color modes | Bootstrap | 5.3.3 |
+| Appearance styling | CSS custom properties and Bootstrap variable mappings | Project-owned CSS |
 | Browser scripting | jQuery | 3.7.1 |
 | Client-side validation | jQuery Validation | 1.21.0 |
 | Database | SQLite | via EF Core SQLite 9.0.9 |
@@ -59,7 +65,8 @@ The application follows the standard server-rendered MVC pattern:
 - `ApplicationDbContext` provides EF Core access to the SQLite `JobApplications` and `Users` tables.
 - `JwtTokenService` creates signed access tokens; JWT Bearer middleware reads them from the authentication cookie.
 - `JobApplicationCursorCodec` serializes pagination keys into URL-safe opaque cursor strings.
-- `ApplicationInfoOptions` binds presentation metadata from configuration.
+- `ApplicationInfoOptions` binds presentation metadata, while `ThemeOptions` validates shared appearance defaults.
+- A synchronous pre-render initializer resolves browser-local mode and palette preferences before Bootstrap and the palette stylesheet are applied.
 
 All application records currently belong to one shared dataset; there is no user-to-application ownership relationship.
 
@@ -67,7 +74,11 @@ All application records currently belong to one shared dataset; there is no user
 
 ```text
 .
-├── Configuration/              # Strongly typed application-information options
+├── Configuration/
+│   ├── ApplicationInfoOptions.cs # Shared presentation metadata
+│   ├── ThemeMode.cs              # Light, Dark, and System preferences
+│   ├── ThemePalette.cs           # Closed set of five accent palettes
+│   └── ThemeOptions.cs           # Validated appearance defaults and policies
 ├── Controllers/                # Login, dashboard, and job-application request handlers
 ├── Data/                       # EF Core context and startup seeders
 ├── Migrations/                 # Versioned EF Core schema history
@@ -77,7 +88,9 @@ All application records currently belong to one shared dataset; there is no user
 ├── Services/                   # JWT creation and token result
 ├── ViewModels/                 # Presentation-specific page models
 ├── Views/                      # Razor pages and shared layout/partials
-├── wwwroot/                    # CSS, JavaScript, and vendored client libraries
+├── wwwroot/
+│   ├── css/theme-palettes.css  # Light/dark palette tokens and Bootstrap mappings
+│   └── js/theme-initializer.js # Pre-render resolution and synchronization
 ├── .config/dotnet-tools.json   # Reproducible local EF CLI version
 ├── JobApplicationTracker.csproj
 ├── Program.cs                  # Composition root and HTTP pipeline
@@ -85,6 +98,37 @@ All application records currently belong to one shared dataset; there is no user
 ```
 
 `Migrations/` and `.config/dotnet-tools.json` should be committed: migrations make database changes reviewable and repeatable, while the tool manifest pins the EF CLI used to manage them. Source, views, static assets, project files, and safe shared configuration should also be committed. Local SQLite files, build output, IDE state, local configuration overrides, and secrets should not be committed.
+
+## Appearance configuration and browser preferences
+
+The committed `Theme` section contains safe, non-secret defaults:
+
+```json
+"Theme": {
+  "DefaultMode": "System",
+  "AllowUserSelection": true,
+  "DefaultPalette": "Ocean",
+  "AllowPaletteSelection": true
+}
+```
+
+Valid `DefaultMode` values are `Light`, `Dark`, and `System`. Valid `DefaultPalette` values are `Ocean`, `Fall`, `Coffee`, `Sakura`, and `Forest`. `AllowUserSelection` controls whether the mode selector and stored mode preference are enabled; `AllowPaletteSelection` independently controls the palette selector and stored palette preference. The `Theme` section is required, and unsupported enum values fail configuration binding or startup options validation. These settings are suitable for `appsettings.json`; they are not secrets and do not belong in User Secrets.
+
+Mode resolution uses this precedence:
+
+1. A valid `jobApplicationTracker.theme` value when mode selection is enabled.
+2. The configured default mode.
+3. A safe browser fallback; `System` resolves through `prefers-color-scheme`.
+
+Palette resolution uses this precedence:
+
+1. A valid `jobApplicationTracker.palette` value when palette selection is enabled.
+2. The configured default palette.
+3. The Ocean fallback.
+
+Storage access is defensive: unavailable storage does not break rendering or navigation. Explicit choices survive navigation and reload, changes synchronize across tabs, and System reacts to live operating-system changes. Disabling either selector ignores its stored preference without deleting it. Both preferences are browser-local; neither is stored in SQLite nor attached to `AppUser`.
+
+Bootstrap receives only `light` or `dark` through `data-bs-theme`. The independent `data-theme-palette` attribute selects an accent token set. The palette layer maps those tokens to Bootstrap primary, link, button-state, and focus variables while leaving success, danger, warning, info, and neutral semantics unchanged. Mapping only `--bs-primary` would be insufficient because Bootstrap buttons define component-local state variables. See [the architecture document](docs/architecture.md#appearance-resolution-and-styling) for the detailed lifecycle and token design.
 
 ## Data model and status lifecycle
 
@@ -160,7 +204,7 @@ dotnet user-secrets set "SeedUser:Password" "<your-password>"
 dotnet user-secrets set "Jwt:Key" "<your-random-jwt-key>"
 ```
 
-Use a high-entropy JWT key of at least 32 UTF-8 bytes. Do not use the literal placeholders, and do not commit secret values. The non-secret JWT issuer, audience, expiration, SQLite connection string, and display metadata are provided in `appsettings.json`.
+Use a high-entropy JWT key of at least 32 UTF-8 bytes. Do not use the literal placeholders, and do not commit secret values. The non-secret JWT issuer, audience, expiration, SQLite connection string, display metadata, and appearance defaults are provided in `appsettings.json`. No additional appearance setup is required.
 
 User Secrets are outside this repository. Do not inspect, copy, or publish the generated secrets file.
 
@@ -204,7 +248,9 @@ dotnet ef database update
 dotnet run
 ```
 
-Then manually verify login/logout, authorization redirects, dashboard totals, CRUD operations, field validation, combined search/status filtering, and both pagination directions. For documentation-only changes, also run:
+Then manually verify login/logout, authorization redirects, dashboard totals, CRUD operations, field validation, combined search/status filtering, and both pagination directions. Appearance checks should cover all three mode preferences, all five palettes, all ten effective palette/mode combinations, live System changes, refresh and navigation, cross-tab synchronization, the collapsed mobile navbar, and focus, hover, active, disabled, link, and button states.
+
+The ten visual combinations and multi-browser mode behavior have been manually verified by the project owner. Repository validation covers builds and static checks, but there are currently no automated browser or accessibility tests. For documentation-only changes, also run:
 
 ```bash
 git diff --check
