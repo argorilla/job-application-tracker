@@ -70,6 +70,21 @@ sequenceDiagram
 
 `Program.cs` registers MVC, EF Core, authentication, authorization, application services, cursor encoding, and options. The runtime pipeline uses HTTPS redirection, routing, authentication, authorization, static assets, and the conventional `{controller=Home}/{action=Index}/{id?}` route. Outside Development, exceptions are routed to `/Home/Error` and HSTS is enabled.
 
+## Shared application shell
+
+The shared layout keeps the navbar and footer surfaces full width while aligning their inner content with the main content through Bootstrap `.container` wrappers. The `body` is a minimum-viewport-height flex column, and the existing main `.container` grows into available vertical space. The footer therefore stays at the viewport edge on short pages and follows content normally on long pages; it has no absolute positioning or fixed-height reservation and can expand when its content stacks on narrow screens.
+
+The header hierarchy is:
+
+1. The **Job Application Tracker** brand.
+2. Authenticated primary navigation for Dashboard and Applications.
+3. A flexible gap followed by the Appearance utility.
+4. An explicit account group containing the username and POST Log out action, or Sign in for anonymous users outside the Login page.
+
+The navbar collapses below Bootstrap's `lg` breakpoint. Active primary links receive Bootstrap's active class and `aria-current="page"` from server-side route data. Appearance is visually separated from a following account group, but no empty divider is rendered when either side is absent. The Login page suppresses the redundant Sign in action, long desktop usernames are visually truncated while their full value remains in the DOM, and no account dropdown is used.
+
+`ApplicationInfoOptions` supplies `CopyrightYear`, `Name`, and `Applicator` to the footer. At `sm` and wider, its metadata group sits opposite the Data & Privacy link and may wrap; below `sm`, the content stacks naturally. The link's visible name is Data & Privacy, while its route remains `Home/Privacy`.
+
 ## Appearance resolution and styling
 
 Appearance has two independent preference dimensions:
@@ -118,7 +133,9 @@ The shared layout loads appearance resources in this order:
 
 The external initializer runs in the document head without `async` or `defer`. It normalizes server-rendered defaults, safely reads `jobApplicationTracker.theme` and `jobApplicationTracker.palette` when their respective selection policies are enabled, and writes the resolved root attributes before stylesheets are applied. This reduces flashes of the server fallback mode or default accent, although it does not make a flash mathematically impossible in every browser or loading condition.
 
-Mode and palette state remain separate inside the initializer. Storage failures are caught without logging values or interrupting navigation. After DOM readiness, native selectors are initialized from the resolved preferences. Valid changes apply immediately and are written to local storage; failed writes still leave the current page updated. Storage events synchronize valid cross-tab changes and restore configured defaults when a key is removed, without writing back. Invalid event values are ignored.
+Mode and palette state remain separate inside the initializer. Storage failures are caught without logging values or interrupting navigation. After DOM readiness, the native radio groups are initialized from the resolved preferences. Valid changes apply immediately and are written to local storage; failed writes still leave the current page updated. Storage events synchronize valid cross-tab changes and restore configured defaults when a key is removed, without writing back. Invalid event values are ignored.
+
+The controls live in one Bootstrap-managed Appearance dropdown. Mode is a custom segmented presentation over a native radio fieldset; Palette is a custom card grid with labeled, decorative swatches over a separate native radio fieldset. Checked and focus-visible styles are CSS-driven, while the inputs retain browser radio semantics. Bootstrap manages disclosure opening and closing; application JavaScript only synchronizes preference state, root attributes, storage, operating-system changes, and cross-tab updates.
 
 For System mode, a `prefers-color-scheme: dark` media query resolves the effective Bootstrap mode and listens for live operating-system changes. Explicit Light or Dark preferences are unaffected by those changes. Mode and palette interaction and storage listeners are independently enabled: disabling one ignores its stored value without deleting it or disabling the other.
 
@@ -192,7 +209,9 @@ flowchart TD
 
 JWT Bearer is both the default authentication and challenge scheme. `OnMessageReceived` copies the authentication cookie value into the handler's token input. Validation checks issuer, audience, signing key, and lifetime with zero clock skew. The name claim populates `User.Identity.Name`.
 
-`[Authorize]` protects `HomeController.Index`, `AccountController.Logout`, and the entire `JobApplicationsController`. Login is anonymous. The Privacy and Error actions are also currently anonymous. A failed challenge redirects to `/Account/Login` with the original local path and query as `returnUrl`; login only follows it when `Url.IsLocalUrl` accepts it.
+`[Authorize]` protects `HomeController.Index`, `AccountController.Logout`, and the entire `JobApplicationsController`. Login is anonymous. The `Home/Privacy` and Error actions are also currently anonymous. A failed challenge redirects to `/Account/Login` with the original local path and query as `returnUrl`; login only follows it when `Url.IsLocalUrl` accepts it.
+
+The `Home/Privacy` route now renders the visible **Data & Privacy** implementation overview. It documents current storage, authentication-cookie behavior, browser preferences, secret boundaries, external-service boundaries, deployment responsibility, and limitations without changing authorization or data handling. The existing controller action already returned the view anonymously, so no controller or routing change was required. The page is descriptive project documentation, not a formal legal privacy policy.
 
 ## Cursor pagination flow
 
@@ -313,4 +332,7 @@ At startup, a manually created scope resolves the DbContext and password hasher,
 - **Synchronous external initializer:** improves first-paint consistency while remaining compatible with a future restrictive script policy more easily than inline code, but adds a render-blocking request.
 - **Single token stylesheet:** centralizes all palette/mode combinations and shared Bootstrap mappings with less duplication than one stylesheet per palette, at the cost of loading definitions for inactive palettes.
 - **Closed palette enum:** makes server validation and browser normalization predictable, but does not support arbitrary user-defined colors.
-- **Two native selectors:** preserve keyboard behavior and keep dependencies small, but offer less visual customization than a bespoke appearance component.
+- **Custom-styled native radios:** provide segmented and card-based controls without the scripting and accessibility burden of a custom ARIA selection widget, but require dedicated CSS across modes and palettes.
+- **One Appearance disclosure:** keeps utilities from dominating the navbar, but adds an interaction before a preference can be changed compared with always-visible controls.
+- **Shared `.container` alignment:** gives the navbar, main content, and footer consistent gutters and maximum widths, but deliberately avoids a wider application shell for dense pages.
+- **Implementation privacy overview:** documents repository behavior in context without presenting deployment-specific legal promises, but operators must still assess their own environment and obligations.

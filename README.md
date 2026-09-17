@@ -21,8 +21,11 @@ For a more detailed explanation of boundaries and request flows, see [docs/archi
 - Protect the dashboard and application-management routes with authorization.
 - Seed starter application records and one locally configured user.
 - Manage the schema through committed Entity Framework Core migrations.
-- Choose Light, Dark, or System mode independently from the Ocean, Fall, Coffee, Sakura, or Forest accent palette.
+- Use a responsive application shell with aligned header, content, and footer regions.
+- Choose Light, Dark, or System mode independently from the Ocean, Fall, Coffee, Sakura, or Forest accent palette through one compact Appearance dropdown.
 - Preserve browser-local appearance choices across navigation and synchronize changes across tabs; System mode follows live operating-system color-scheme changes.
+- Review the anonymously accessible Data & Privacy implementation overview.
+- Display configured application metadata in a responsive footer.
 
 The five palettes support both effective Bootstrap modes, producing ten palette/mode visual combinations. These combinations, along with Light, Dark, and System behavior, have been manually verified in multiple browsers.
 
@@ -101,6 +104,8 @@ All application records currently belong to one shared dataset; there is no user
 
 ## Appearance configuration and browser preferences
 
+The shared navbar exposes one Appearance dropdown. Its custom-styled controls remain native radio inputs: Mode is presented as a segmented group with Light, Dark, and System choices, while Palette uses labeled cards and swatches for Ocean, Fall, Coffee, Sakura, and Forest. This preserves native radio semantics and keyboard behavior while keeping appearance settings out of the primary navigation.
+
 The committed `Theme` section contains safe, non-secret defaults:
 
 ```json
@@ -112,7 +117,7 @@ The committed `Theme` section contains safe, non-secret defaults:
 }
 ```
 
-Valid `DefaultMode` values are `Light`, `Dark`, and `System`. Valid `DefaultPalette` values are `Ocean`, `Fall`, `Coffee`, `Sakura`, and `Forest`. `AllowUserSelection` controls whether the mode selector and stored mode preference are enabled; `AllowPaletteSelection` independently controls the palette selector and stored palette preference. The `Theme` section is required, and unsupported enum values fail configuration binding or startup options validation. These settings are suitable for `appsettings.json`; they are not secrets and do not belong in User Secrets.
+Valid `DefaultMode` values are `Light`, `Dark`, and `System`. Valid `DefaultPalette` values are `Ocean`, `Fall`, `Coffee`, `Sakura`, and `Forest`. `AllowUserSelection` controls whether the mode radio group and stored mode preference are enabled; `AllowPaletteSelection` independently controls the palette radio group and stored palette preference. The Appearance dropdown is omitted when both policies are disabled. The `Theme` section is required, and unsupported enum values fail configuration binding or startup options validation. These settings are suitable for `appsettings.json`; they are not secrets and do not belong in User Secrets.
 
 Mode resolution uses this precedence:
 
@@ -129,6 +134,18 @@ Palette resolution uses this precedence:
 Storage access is defensive: unavailable storage does not break rendering or navigation. Explicit choices survive navigation and reload, changes synchronize across tabs, and System reacts to live operating-system changes. Disabling either selector ignores its stored preference without deleting it. Both preferences are browser-local; neither is stored in SQLite nor attached to `AppUser`.
 
 Bootstrap receives only `light` or `dark` through `data-bs-theme`. The independent `data-theme-palette` attribute selects an accent token set. The palette layer maps those tokens to Bootstrap primary, link, button-state, and focus variables while leaving success, danger, warning, info, and neutral semantics unchanged. Mapping only `--bs-primary` would be insufficient because Bootstrap buttons define component-local state variables. See [the architecture document](docs/architecture.md#appearance-resolution-and-styling) for the detailed lifecycle and token design.
+
+Safe display metadata is also committed in `appsettings.json`:
+
+```json
+"ApplicationInfo": {
+  "Name": "Job Application Tracker",
+  "Applicator": "argoraden",
+  "CopyrightYear": 2026
+}
+```
+
+The shared footer reads these values through `ApplicationInfoOptions`; none is secret.
 
 ## Data model and status lifecycle
 
@@ -172,6 +189,10 @@ The current authentication flow is intended for education and local development:
 State-changing form actions use anti-forgery validation, and Razor form tag helpers emit the corresponding tokens. The login response only redirects to a return URL accepted by `Url.IsLocalUrl`, reducing open-redirect risk.
 
 This design has no refresh-token flow, server-side token revocation, MFA, lockout, password recovery, signing-key rotation, roles, registration, or multi-user administration. The cursor is also unsigned. For a production server-rendered MVC application, prefer ASP.NET Core Identity with cookie authentication, or delegate identity to an OpenID Connect provider such as Keycloak, Auth0, Microsoft Entra ID, or Amazon Cognito.
+
+## Data & Privacy
+
+The existing `Home/Privacy` route remains anonymously accessible and is presented as **Data & Privacy**. It summarizes the current implementation's SQLite records, local account data, authentication cookie, browser appearance preferences, local secret handling, external-service boundaries, self-hosted deployment responsibilities, and known limitations. It is an implementation overview rather than a formal legal policy.
 
 ## Local setup
 
@@ -248,7 +269,7 @@ dotnet ef database update
 dotnet run
 ```
 
-Then manually verify login/logout, authorization redirects, dashboard totals, CRUD operations, field validation, combined search/status filtering, and both pagination directions. Appearance checks should cover all three mode preferences, all five palettes, all ten effective palette/mode combinations, live System changes, refresh and navigation, cross-tab synchronization, the collapsed mobile navbar, and focus, hover, active, disabled, link, and button states.
+Then manually verify login/logout, authorization redirects, dashboard totals, CRUD operations, field validation, combined search/status filtering, and both pagination directions. Shell checks should cover anonymous and authenticated header states, Login-page Sign in suppression, the collapsed mobile navbar, short- and long-page footer placement, and responsive footer stacking. Appearance checks should cover keyboard operation of the dropdown and native radio groups, all three mode preferences, all five palettes, all ten effective palette/mode combinations, live System changes, refresh and navigation, cross-tab synchronization, and focus, hover, active, disabled, link, and button states. Verify Data & Privacy anonymously in both effective Light and Dark modes.
 
 The ten visual combinations and multi-browser mode behavior have been manually verified by the project owner. Repository validation covers builds and static checks, but there are currently no automated browser or accessibility tests. For documentation-only changes, also run:
 
@@ -265,7 +286,6 @@ git diff --check
 - Seed data is embedded in source and should use clearly fictional examples before public release.
 - Database migrations must be applied manually before first run.
 - There is no automated test project.
-- The Privacy page still contains template placeholder content.
 - Screenshots are not present.
 
 ## Possible future improvements
@@ -277,7 +297,7 @@ git diff --check
 - Add optimistic-concurrency tokens and user-friendly conflict handling.
 - Replace starter records with explicitly fictional sample data or an opt-in development seeder.
 - Add structured logging, health checks, and deployment-specific configuration validation.
-- Add privacy-safe screenshots and write a real privacy notice.
+- Add privacy-safe screenshots.
 
 ## License
 
