@@ -61,6 +61,10 @@
     var paletteSelectionEnabled = Theme.Value.AllowPaletteSelection
         ? "true"
         : "false";
+
+    var showAppearance = Theme.Value.AllowUserSelection ||
+        Theme.Value.AllowPaletteSelection;
+    var showAccountActions = !isLoginPage;
 }
 
 <!DOCTYPE html>
@@ -82,10 +86,10 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/JobApplicationTracker.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
         <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom box-shadow mb-3">
-            <div class="container-fluid">
+            <div class="container">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Job Application Tracker</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -117,12 +121,11 @@
                         </ul>
                     }
 
-                    <ul class="navbar-nav ms-auto">
-                        @if (Theme.Value.AllowUserSelection ||
-                            Theme.Value.AllowPaletteSelection)
+                    <ul class="navbar-nav navbar-utilities ms-auto">
+                        @if (showAppearance)
                         {
                             <li class="nav-item dropdown appearance-dropdown
-                                       me-lg-3 my-2 my-lg-0">
+                                       my-2 my-lg-0">
                                 <button id="appearanceDropdown"
                                     class="btn btn-outline-secondary dropdown-toggle
                                            appearance-trigger"
@@ -288,34 +291,36 @@
                             </li>
                         }
 
-                        @if (User.Identity?.IsAuthenticated == true)
+                        @if (showAccountActions)
                         {
-                            <li class="nav-item d-flex align-items-center me-lg-3">
-                                <span class="navbar-text navbar-username"
-                                    title="@User.Identity.Name">
-                                    Signed in as @User.Identity.Name
-                                </span>
-                            </li>
+                            <li class="nav-item navbar-account-group
+                                @(showAppearance ? "navbar-account-group-separated" : null)">
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <span class="navbar-text navbar-username"
+                                        title="@User.Identity.Name">
+                                        <span class="visually-hidden">Signed in as </span>
+                                        @User.Identity.Name
+                                    </span>
 
-                            <li class="nav-item">
-                                <form asp-controller="Account"
-                                    asp-action="Logout"
-                                    method="post">
-                                    <button type="submit"
-                                            class="btn btn-outline-secondary">
-                                        Logout
-                                    </button>
-                                </form>
-                            </li>
-                        }
-                        else if (!isLoginPage)
-                        {
-                            <li class="nav-item">
-                                <a asp-controller="Account"
-                                asp-action="Login"
-                                class="nav-link">
-                                    Sign in
-                                </a>
+                                    <form asp-controller="Account"
+                                        asp-action="Logout"
+                                        class="flex-shrink-0"
+                                        method="post">
+                                        <button type="submit"
+                                            class="btn navbar-account-action">
+                                            Log out
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Account"
+                                        asp-action="Login"
+                                        class="nav-link navbar-account-action">
+                                        Sign in
+                                    </a>
+                                }
                             </li>
                         }
                     </ul>
@@ -323,20 +328,28 @@
             </div>
         </nav>
     </header>
-    <div class="container">
+    <div class="container flex-grow-1">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; @DateTime.Now.Year -
-            @ApplicationInfo.Value.Name - @ApplicationInfo.Value.Applicator -
+    <footer class="border-top footer text-muted mt-auto py-3">
+        <div class="container footer-content">
+            <div class="footer-metadata">
+                <span>
+                    &copy; @ApplicationInfo.Value.CopyrightYear
+                    @ApplicationInfo.Value.Name
+                </span>
+                <span class="footer-metadata-separator" aria-hidden="true">
+                    &middot;
+                </span>
+                <span>Built by @ApplicationInfo.Value.Applicator</span>
+            </div>
             <a asp-area=""
-            asp-controller="Home"
-            asp-action="Privacy">
-                Privacy
+                asp-controller="Home"
+                asp-action="Privacy">
+                Data &amp; Privacy
             </a>
         </div>
     </footer>

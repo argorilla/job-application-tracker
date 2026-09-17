@@ -1,6 +1,180 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "Data & Privacy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="row justify-content-center">
+    <div class="col-lg-9 col-xl-8">
+        <header class="mb-4">
+            <h1>@ViewData["Title"]</h1>
+            <p class="lead">
+                This page describes how the current Job Application Tracker
+                implementation stores and handles data. The project is designed
+                primarily for local or self-hosted use.
+            </p>
+            <div class="bg-body-tertiary border border-start border-4 border-primary rounded-3 p-3 mb-3">
+                This is an implementation overview of the current repository,
+                not a formal legal policy or regulatory-compliance statement.
+            </div>
+        </header>
+
+        <section class="mb-5" aria-labelledby="stored-data-heading">
+            <h2 id="stored-data-heading" class="h4">
+                Data stored by the application
+            </h2>
+            <p>Job application records may contain:</p>
+            <ul>
+                <li>Company name and position</li>
+                <li>Application source and job URL</li>
+                <li>Location and application date</li>
+                <li>Application status and notes</li>
+            </ul>
+            <p>
+                Entity Framework Core stores these records in the configured
+                SQLite database. Its contents depend on what the user enters.
+                When the application starts with an empty job applications
+                table, the initializer adds example records. These examples are
+                demonstration data and should not be treated as private
+                production data.
+            </p>
+        </section>
+
+        <section class="mb-5" aria-labelledby="account-data-heading">
+            <h2 id="account-data-heading" class="h4">
+                Local account data
+            </h2>
+            <p>The local <code>AppUser</code> record stores:</p>
+            <ul>
+                <li>A username</li>
+                <li>A normalized username used for matching</li>
+                <li>A password hash</li>
+            </ul>
+            <p>
+                Plaintext passwords are not fields on the <code>AppUser</code>
+                entity. When the users table is empty, the application creates
+                one local user from configured seed credentials and stores a
+                hash of that password. This is an educational local
+                authentication implementation, not a complete account-management
+                system or production identity platform.
+            </p>
+        </section>
+
+        <section class="mb-5" aria-labelledby="authentication-heading">
+            <h2 id="authentication-heading" class="h4">
+                Authentication cookie
+            </h2>
+            <p>
+                After a successful login, the application places a signed JSON
+                Web Token (JWT) in an HttpOnly cookie. HttpOnly reduces direct
+                access from browser JavaScript, and <code>SameSite=Strict</code>
+                limits when the browser sends the cookie across sites. The
+                cookie expires at the same time as the token, and its Secure flag
+                is enabled when login occurs over HTTPS.
+            </p>
+            <p>
+                Logging out removes the browser cookie. The current application
+                does not provide server-side token revocation, and the signed
+                token should not be understood as an encrypted cookie or a
+                production-grade session system.
+            </p>
+        </section>
+
+        <section class="mb-5" aria-labelledby="browser-preferences-heading">
+            <h2 id="browser-preferences-heading" class="h4">
+                Browser preferences
+            </h2>
+            <p>
+                Mode and palette preferences are stored locally in the browser.
+                They are not part of the local user record and are not persisted
+                to SQLite, so choices may differ between browsers or devices.
+                Clearing browser storage resets the preferences to the configured
+                defaults.
+            </p>
+            <p class="text-body-secondary">
+                The storage keys are <code>jobApplicationTracker.theme</code> and
+                <code>jobApplicationTracker.palette</code>.
+            </p>
+        </section>
+
+        <section class="mb-5" aria-labelledby="local-configuration-heading">
+            <h2 id="local-configuration-heading" class="h4">
+                Local configuration and secrets
+            </h2>
+            <p>
+                The development setup expects the seed-user credentials and JWT
+                signing key to come from .NET User Secrets or another appropriate
+                secret source. Secret values should not be committed to the
+                repository.
+            </p>
+            <p>
+                Git ignore rules cover SQLite database files and their sidecar
+                files to reduce the risk of accidental inclusion in a commit.
+                Ignoring those files does not encrypt them. Anyone operating the
+                application remains responsible for protecting local database
+                files and secrets.
+            </p>
+        </section>
+
+        <section class="mb-5" aria-labelledby="external-services-heading">
+            <h2 id="external-services-heading" class="h4">
+                External services and links
+            </h2>
+            <p>
+                The current repository implementation includes no analytics
+                integration or third-party tracking script. Its browser libraries
+                are served from local <code>wwwroot</code> files, and its server
+                code does not configure an outbound HTTP API client.
+            </p>
+            <p>
+                A saved job URL may take the user to an external website. That
+                destination has its own data and privacy practices. Modified or
+                separately deployed copies of this project may also add external
+                services that are not described here.
+            </p>
+        </section>
+
+        <section class="mb-5" aria-labelledby="deployment-heading">
+            <h2 id="deployment-heading" class="h4">
+                Self-hosted deployment
+            </h2>
+            <p>Someone deploying a copy controls decisions such as:</p>
+            <ul>
+                <li>Hosting, HTTPS/TLS, and access control</li>
+                <li>Secret management and database access</li>
+                <li>Backups, logging, and monitoring</li>
+                <li>Any additional integrations</li>
+            </ul>
+            <p>
+                Those choices can change how the application handles data.
+                Operators are responsible for reviewing their environment and
+                determining their own technical and legal obligations.
+            </p>
+        </section>
+
+        <section class="mb-4" aria-labelledby="limitations-heading">
+            <h2 id="limitations-heading" class="h4">
+                Current limitations
+            </h2>
+            <ul>
+                <li>The application uses one configured local-user model.</li>
+                <li>Registration and password recovery are not implemented.</li>
+                <li>
+                    Job application records have no per-user ownership
+                    relationship; authenticated users would access the same
+                    application dataset.
+                </li>
+                <li>There is no configurable data-retention policy.</li>
+                <li>
+                    Automated data export and deletion workflows are not
+                    implemented.
+                </li>
+                <li>
+                    The project does not implement database encryption at rest.
+                </li>
+                <li>
+                    Local authentication is educational and is not a production
+                    identity platform.
+                </li>
+            </ul>
+        </section>
+    </div>
+</div>
