@@ -4,6 +4,34 @@
 @inject IOptionsSnapshot<ThemeOptions> Theme
 
 @{
+    var currentController = ViewContext.RouteData.Values["controller"]
+        ?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]
+        ?.ToString();
+
+    var isDashboardActive = string.Equals(
+        currentController,
+        "Home",
+        StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(
+            currentAction,
+            "Index",
+            StringComparison.OrdinalIgnoreCase);
+
+    var isApplicationsActive = string.Equals(
+        currentController,
+        "JobApplications",
+        StringComparison.OrdinalIgnoreCase);
+
+    var isLoginPage = string.Equals(
+        currentController,
+        "Account",
+        StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(
+            currentAction,
+            "Login",
+            StringComparison.OrdinalIgnoreCase);
+
     var configuredThemePreference = Theme.Value.DefaultMode switch
     {
         ThemeMode.Light => "light",
@@ -56,29 +84,35 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm bg-body-tertiary border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">JobApplicationTracker</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Job Application Tracker</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <div id="navbarSupportedContent"
+                    class="navbar-collapse collapse d-lg-flex
+                           justify-content-between">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <ul class="navbar-nav flex-grow-1">
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link"
-                                asp-controller="JobApplications"
-                                asp-action="Index">
-                                    Applications
+                                <a class="nav-link @(isDashboardActive ? "active" : null)"
+                                    aria-current="@(isDashboardActive ? "page" : null)"
+                                    asp-area=""
+                                    asp-controller="Home"
+                                    asp-action="Index">
+                                    Dashboard
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                                <a class="nav-link @(isApplicationsActive ? "active" : null)"
+                                    aria-current="@(isApplicationsActive ? "page" : null)"
+                                    asp-controller="JobApplications"
+                                    asp-action="Index">
+                                    Applications
+                                </a>
                             </li>
                         </ul>
                     }
@@ -87,78 +121,178 @@
                         @if (Theme.Value.AllowUserSelection ||
                             Theme.Value.AllowPaletteSelection)
                         {
-                            <li class="nav-item me-sm-3 my-2 my-sm-0">
-                                <fieldset class="border-0 p-0 m-0 d-flex
-                                    flex-column flex-sm-row gap-2">
-                                    <legend class="visually-hidden">
-                                        Appearance
-                                    </legend>
+                            <li class="nav-item dropdown appearance-dropdown
+                                       me-lg-3 my-2 my-lg-0">
+                                <button id="appearanceDropdown"
+                                    class="btn btn-outline-secondary dropdown-toggle
+                                           appearance-trigger"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside"
+                                    aria-expanded="false">
+                                    Appearance
+                                </button>
 
+                                <div class="dropdown-menu dropdown-menu-end
+                                            appearance-panel"
+                                    aria-labelledby="appearanceDropdown">
                                     @if (Theme.Value.AllowUserSelection)
                                     {
-                                        <div class="d-flex align-items-center gap-2">
-                                            <label for="theme-preference"
-                                                class="form-label small mb-0">
+                                        <fieldset class="appearance-fieldset">
+                                            <legend class="appearance-legend">
                                                 Mode
-                                            </label>
-                                            <select id="theme-preference"
-                                                class="form-select form-select-sm w-auto">
-                                                <option value="system"
-                                                    selected="@(configuredThemePreference == "system")">
+                                            </legend>
+
+                                            <div class="appearance-mode-grid">
+                                              <div class="appearance-mode-option">
+                                                <input id="appearance-mode-system"
+                                                    class="visually-hidden appearance-radio
+                                                           appearance-mode-radio"
+                                                    type="radio"
+                                                    name="appearance-mode"
+                                                    value="system"
+                                                    checked="@(configuredThemePreference == "system")" />
+                                                <label class="appearance-mode-label"
+                                                    for="appearance-mode-system">
                                                     System
-                                                </option>
-                                                <option value="light"
-                                                    selected="@(configuredThemePreference == "light")">
+                                                </label>
+                                              </div>
+                                              <div class="appearance-mode-option">
+                                                <input id="appearance-mode-light"
+                                                    class="visually-hidden appearance-radio
+                                                           appearance-mode-radio"
+                                                    type="radio"
+                                                    name="appearance-mode"
+                                                    value="light"
+                                                    checked="@(configuredThemePreference == "light")" />
+                                                <label class="appearance-mode-label"
+                                                    for="appearance-mode-light">
                                                     Light
-                                                </option>
-                                                <option value="dark"
-                                                    selected="@(configuredThemePreference == "dark")">
+                                                </label>
+                                              </div>
+                                              <div class="appearance-mode-option">
+                                                <input id="appearance-mode-dark"
+                                                    class="visually-hidden appearance-radio
+                                                           appearance-mode-radio"
+                                                    type="radio"
+                                                    name="appearance-mode"
+                                                    value="dark"
+                                                    checked="@(configuredThemePreference == "dark")" />
+                                                <label class="appearance-mode-label"
+                                                    for="appearance-mode-dark">
                                                     Dark
-                                                </option>
-                                            </select>
-                                        </div>
+                                                </label>
+                                              </div>
+                                            </div>
+                                        </fieldset>
                                     }
 
                                     @if (Theme.Value.AllowPaletteSelection)
                                     {
-                                        <div class="d-flex align-items-center gap-2">
-                                            <label for="palette-preference"
-                                                class="form-label small mb-0">
-                                                Theme
-                                            </label>
-                                            <select id="palette-preference"
-                                                class="form-select form-select-sm w-auto">
-                                                <option value="ocean"
-                                                    selected="@(configuredPalette == "ocean")">
+                                        <fieldset class="appearance-fieldset
+                                            appearance-palette-fieldset
+                                            @(Theme.Value.AllowUserSelection ? "appearance-fieldset-separated" : null)">
+                                            <legend class="appearance-legend">
+                                                Palette
+                                            </legend>
+
+                                            <div class="appearance-palette-grid">
+                                              <div class="appearance-palette-option">
+                                                <input id="appearance-palette-ocean"
+                                                    class="visually-hidden appearance-radio
+                                                           appearance-palette-radio"
+                                                    type="radio"
+                                                    name="appearance-palette"
+                                                    value="ocean"
+                                                    checked="@(configuredPalette == "ocean")" />
+                                                <label class="appearance-palette-card"
+                                                    for="appearance-palette-ocean">
+                                                    <span class="appearance-palette-swatch appearance-palette-swatch-ocean"
+                                                        data-palette="ocean"
+                                                        aria-hidden="true"></span>
                                                     Ocean
-                                                </option>
-                                                <option value="fall"
-                                                    selected="@(configuredPalette == "fall")">
+                                                </label>
+                                              </div>
+                                              <div class="appearance-palette-option">
+                                                <input id="appearance-palette-fall"
+                                                    class="visually-hidden appearance-radio
+                                                           appearance-palette-radio"
+                                                    type="radio"
+                                                    name="appearance-palette"
+                                                    value="fall"
+                                                    checked="@(configuredPalette == "fall")" />
+                                                <label class="appearance-palette-card"
+                                                    for="appearance-palette-fall">
+                                                    <span class="appearance-palette-swatch appearance-palette-swatch-fall"
+                                                        data-palette="fall"
+                                                        aria-hidden="true"></span>
                                                     Fall
-                                                </option>
-                                                <option value="coffee"
-                                                    selected="@(configuredPalette == "coffee")">
+                                                </label>
+                                              </div>
+                                              <div class="appearance-palette-option">
+                                                <input id="appearance-palette-coffee"
+                                                    class="visually-hidden appearance-radio
+                                                           appearance-palette-radio"
+                                                    type="radio"
+                                                    name="appearance-palette"
+                                                    value="coffee"
+                                                    checked="@(configuredPalette == "coffee")" />
+                                                <label class="appearance-palette-card"
+                                                    for="appearance-palette-coffee">
+                                                    <span class="appearance-palette-swatch appearance-palette-swatch-coffee"
+                                                        data-palette="coffee"
+                                                        aria-hidden="true"></span>
                                                     Coffee
-                                                </option>
-                                                <option value="sakura"
-                                                    selected="@(configuredPalette == "sakura")">
+                                                </label>
+                                              </div>
+                                              <div class="appearance-palette-option">
+                                                <input id="appearance-palette-sakura"
+                                                    class="visually-hidden appearance-radio
+                                                           appearance-palette-radio"
+                                                    type="radio"
+                                                    name="appearance-palette"
+                                                    value="sakura"
+                                                    checked="@(configuredPalette == "sakura")" />
+                                                <label class="appearance-palette-card"
+                                                    for="appearance-palette-sakura">
+                                                    <span class="appearance-palette-swatch appearance-palette-swatch-sakura"
+                                                        data-palette="sakura"
+                                                        aria-hidden="true"></span>
                                                     Sakura
-                                                </option>
-                                                <option value="forest"
-                                                    selected="@(configuredPalette == "forest")">
+                                                </label>
+                                              </div>
+                                              <div class="appearance-palette-option">
+                                                <input id="appearance-palette-forest"
+                                                    class="visually-hidden appearance-radio
+                                                           appearance-palette-radio"
+                                                    type="radio"
+                                                    name="appearance-palette"
+                                                    value="forest"
+                                                    checked="@(configuredPalette == "forest")" />
+                                                <label class="appearance-palette-card"
+                                                    for="appearance-palette-forest">
+                                                    <span class="appearance-palette-swatch appearance-palette-swatch-forest"
+                                                        data-palette="forest"
+                                                        aria-hidden="true"></span>
                                                     Forest
-                                                </option>
-                                            </select>
-                                        </div>
+                                                </label>
+                                              </div>
+                                            </div>
+                                        </fieldset>
                                     }
-                                </fieldset>
+
+                                    <p class="appearance-helper-text">
+                                        Preferences are stored in this browser.
+                                    </p>
+                                </div>
                             </li>
                         }
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li class="nav-item d-flex align-items-center me-3">
-                                <span class="navbar-text">
+                            <li class="nav-item d-flex align-items-center me-lg-3">
+                                <span class="navbar-text navbar-username"
+                                    title="@User.Identity.Name">
                                     Signed in as @User.Identity.Name
                                 </span>
                             </li>
@@ -174,13 +308,13 @@
                                 </form>
                             </li>
                         }
-                        else
+                        else if (!isLoginPage)
                         {
                             <li class="nav-item">
                                 <a asp-controller="Account"
                                 asp-action="Login"
                                 class="nav-link">
-                                    Login
+                                    Sign in
                                 </a>
                             </li>
                         }

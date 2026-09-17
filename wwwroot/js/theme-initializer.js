@@ -122,27 +122,50 @@
 
   const initializePreferenceControls = () => {
     if (selectionEnabled) {
-      const selector = document.getElementById("theme-preference");
+      const modeRadios = Array.from(
+        document.querySelectorAll(
+          'input[name="appearance-mode"]'
+        )
+      );
 
-      if (selector !== null) {
-        selector.value = preference;
+      if (modeRadios.length > 0) {
+        const synchronizeModeRadios = selectedPreference => {
+          const matchingRadio = modeRadios.find(
+            radio => radio.value === selectedPreference
+          );
 
-        selector.addEventListener("change", () => {
-          const selectedPreference = normalizePreference(selector.value);
-
-          if (selectedPreference === null) {
-            selector.value = preference;
-            return;
+          if (matchingRadio !== undefined) {
+            matchingRadio.checked = true;
           }
+        };
 
-          applyPreference(selectedPreference);
+        synchronizeModeRadios(preference);
 
-          try {
-            window.localStorage.setItem(storageKey, selectedPreference);
-          } catch {
-            // The selected preference still applies to the current page.
-          }
-        });
+        for (const radio of modeRadios) {
+          radio.addEventListener("change", () => {
+            if (!radio.checked) {
+              return;
+            }
+
+            const selectedPreference = normalizePreference(radio.value);
+
+            if (selectedPreference === null) {
+              synchronizeModeRadios(preference);
+              return;
+            }
+
+            applyPreference(selectedPreference);
+
+            try {
+              window.localStorage.setItem(
+                storageKey,
+                selectedPreference
+              );
+            } catch {
+              // The selected preference still applies to the current page.
+            }
+          });
+        }
 
         window.addEventListener("storage", event => {
           if (event.key !== storageKey) {
@@ -157,41 +180,57 @@
             return;
           }
 
-          selector.value = synchronizedPreference;
+          synchronizeModeRadios(synchronizedPreference);
           applyPreference(synchronizedPreference);
         });
       }
     }
 
     if (paletteSelectionEnabled) {
-      const paletteSelector = document.getElementById(
-        "palette-preference"
+      const paletteRadios = Array.from(
+        document.querySelectorAll(
+          'input[name="appearance-palette"]'
+        )
       );
 
-      if (paletteSelector !== null) {
-        paletteSelector.value = palette;
-
-        paletteSelector.addEventListener("change", () => {
-          const selectedPalette = normalizePalette(
-            paletteSelector.value
+      if (paletteRadios.length > 0) {
+        const synchronizePaletteRadios = selectedPalette => {
+          const matchingRadio = paletteRadios.find(
+            radio => radio.value === selectedPalette
           );
 
-          if (selectedPalette === null) {
-            paletteSelector.value = palette;
-            return;
+          if (matchingRadio !== undefined) {
+            matchingRadio.checked = true;
           }
+        };
 
-          applyPalette(selectedPalette);
+        synchronizePaletteRadios(palette);
 
-          try {
-            window.localStorage.setItem(
-              paletteStorageKey,
-              selectedPalette
-            );
-          } catch {
-            // The selected palette still applies to the current page.
-          }
-        });
+        for (const radio of paletteRadios) {
+          radio.addEventListener("change", () => {
+            if (!radio.checked) {
+              return;
+            }
+
+            const selectedPalette = normalizePalette(radio.value);
+
+            if (selectedPalette === null) {
+              synchronizePaletteRadios(palette);
+              return;
+            }
+
+            applyPalette(selectedPalette);
+
+            try {
+              window.localStorage.setItem(
+                paletteStorageKey,
+                selectedPalette
+              );
+            } catch {
+              // The selected palette still applies to the current page.
+            }
+          });
+        }
 
         window.addEventListener("storage", event => {
           if (event.key !== paletteStorageKey) {
@@ -206,7 +245,7 @@
             return;
           }
 
-          paletteSelector.value = synchronizedPalette;
+          synchronizePaletteRadios(synchronizedPalette);
           applyPalette(synchronizedPalette);
         });
       }

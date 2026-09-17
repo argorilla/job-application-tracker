@@ -1,3 +1,19 @@
+:root {
+  --app-palette-preview-ocean: #0e7490;
+  --app-palette-preview-fall: #b45309;
+  --app-palette-preview-coffee: #6f4e37;
+  --app-palette-preview-sakura: #be185d;
+  --app-palette-preview-forest: #3f7d20;
+}
+
+:root[data-bs-theme="dark"] {
+  --app-palette-preview-ocean: #22d3ee;
+  --app-palette-preview-fall: #f59e0b;
+  --app-palette-preview-coffee: #d6a77a;
+  --app-palette-preview-sakura: #f472b6;
+  --app-palette-preview-forest: #4ade80;
+}
+
 :root[data-theme-palette="ocean"][data-bs-theme="light"] {
   --app-accent: #0e7490;
   --app-accent-rgb: 14, 116, 144;
